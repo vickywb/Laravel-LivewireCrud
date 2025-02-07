@@ -21,6 +21,26 @@ class CreateArticleForm extends Component
     public $user, $title, $description, $category, $images = [], $articleId, 
         $isOpen = false, $fileId, $location, $article;
 
+    public function rules()
+    {
+        $rules = [
+            'title' => 'required|string|max:255',
+            'user' => 'required|string',
+            'category' => 'required|string',
+            'description' => 'required|string|max:255',
+            'images.*' => 'image|max:2048'
+        ];
+
+        // if (!empty($this->articleId)) {
+        //     $rules['user'] = 'nullable';
+        //     $rules['category'] = 'nullable';
+        //     $rules['title'] = 'nullable|string';
+        //     $rules['description'] = 'nullable|string';
+        // }
+
+        return $rules;
+    }
+
     public function save()
     {
         $listImages = [];
@@ -28,7 +48,8 @@ class CreateArticleForm extends Component
         $unusedFiles = File::select('id', 'location')
             ->doesntHave('articleImages')
             ->get();
-      
+        
+        $this->validate();
         try {
             DB::beginTransaction();
 
