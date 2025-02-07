@@ -5,15 +5,31 @@ namespace App\Livewire\Category;
 use Livewire\Component;
 use App\Models\Category;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\DB;
 
 class CreateCategoryForm extends Component
 {
-    public $title, $isOpen = false;
+    public $title, $isOpen = false, $categoryId;
     
     public function save()
     {
-        $data = $this->only('title');
-        Category::create($data);
+        try {
+            DB::beginTransaction();
+
+            if (empty($this->categoryId)) {
+                $category = Category::create($this->only('title'));
+            } else {
+                $category = Category::findOrFail($this->categoryId);
+
+                $category->update($this->only('title'));
+            }
+
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollback();
+
+            $this->dispatch('open-alert', status: 'error', message: 'Error' . $th->getMessage());
+        }
 
         $this->closeModal();
         $this->dispatch('load-data-category');
@@ -39,6 +55,16 @@ class CreateCategoryForm extends Component
             'title'
         ]);
         $this->resetValidation();
+    }
+
+    #[On('edit-category')]
+    public function edit($id)
+    {
+        $category = Category::findOrFail($id);
+        $this->categoryId = $category->id;
+        $this->title = $category->title;
+        
+        $this->openModal();
     }
 
 }

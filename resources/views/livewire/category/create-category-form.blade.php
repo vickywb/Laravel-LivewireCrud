@@ -34,7 +34,7 @@
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-outline-light text-dark me-auto" wire:click="closeModal">Close</button>
                 <button type="button" class="btn btn-success" wire:click="save">
-                    Create Category
+                    Save
                 </button>
             </div>
         </div>
