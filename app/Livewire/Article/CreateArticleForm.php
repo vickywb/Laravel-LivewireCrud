@@ -17,20 +17,18 @@ use Livewire\Features\SupportFileUploads\WithFileUploads;
 class CreateArticleForm extends Component
 {
     use WithPagination, WithFileUploads;
-    
+
     public $user, $title, $description, $category, $images = [], $articleId, 
         $isOpen = false, $fileId, $location, $article;
-    
+
     public function save()
     {
         $listImages = [];
 
-        dd($this->user);
-
         $unusedFiles = File::select('id', 'location')
             ->doesntHave('articleImages')
             ->get();
-
+      
         try {
             DB::beginTransaction();
 
@@ -63,7 +61,9 @@ class CreateArticleForm extends Component
 
                 $article->articleImages()->createMany($listImages);
 
+                $this->dispatch('load-data-article');
                 $this->dispatch('open-alert', status: 'success', message: 'Article successfully created.');
+
             } else {
                 $article = Article::findOrFail($this->articleId);
 
@@ -109,7 +109,8 @@ class CreateArticleForm extends Component
                 }
 
                 $article->articleImages()->createMany($listImages);
-               
+
+                $this->dispatch('load-data-article');
                 $this->dispatch('open-alert', status: 'success', message: 'Articles successfully updated.');
             }
 
