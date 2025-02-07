@@ -4,11 +4,12 @@ namespace App\Livewire\Article;
 
 use App\Models\File;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithoutUrlPagination;
-use App\Models\Article as ModelsArticle;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Article as ModelsArticle;
 
 class Article extends Component
 {
@@ -79,5 +80,4 @@ class Article extends Component
 
         $this->dispatch('open-alert', status: 'success', message: 'Article successfully deleted.');
     }
-
 }
