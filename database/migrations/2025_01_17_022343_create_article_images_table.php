@@ -13,21 +13,9 @@ return new class extends Migration
     {
         Schema::create('article_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('article_id');
-            $table->foreignId('file_id');
+            $table->foreignId('article_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('file_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete()->nullable();
             $table->timestamps();
-
-            $table->foreign('article_id')
-                ->references('id')
-                ->on('articles')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            
-            $table->foreign('file_id')
-                ->references('id')
-                ->on('files')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
         });
     }
 
