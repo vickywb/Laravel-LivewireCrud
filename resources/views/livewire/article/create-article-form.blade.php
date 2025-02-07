@@ -41,7 +41,7 @@
                                         </label>
                                         <select 
                                             class="form-select @error('user') is-invalid @enderror" 
-                                            wire:model.live="user"
+                                            wire:model="user"
                                         >
                                             <option>Select Author</option>
                                             @foreach ($users as $user)
@@ -60,7 +60,7 @@
                                         </label>
                                         <select 
                                             class="form-select @error('category') is-invalid @enderror" 
-                                            wire:model.live="category"
+                                            wire:model="category"
                                         >
                                             <option>Select Category</option>
                                             @foreach ($categories as $category)
@@ -94,7 +94,7 @@
                             <button type="button" class="btn btn-outline-light text-dark me-auto" wire:click="closeModal">Close</button>
                             
                             <button type="submit" class="btn btn-success" wire:click="save">
-                                Create Article
+                                Save
                             </button>
                         </div>
 
