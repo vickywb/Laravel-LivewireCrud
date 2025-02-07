@@ -10,7 +10,7 @@
                         <button type="button" class="btn-close" wire:click="closeModal" aria-label="Close"></button>
                     </div>
                     
-                    <livewire:component.alert>
+                    {{-- <livewire:component.alert> --}}
                         
                     <form wire:submit.prevent="save">
                      

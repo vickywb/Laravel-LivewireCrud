@@ -18,8 +18,8 @@ class CreateArticleForm extends Component
 {
     use WithPagination, WithFileUploads;
 
-    public $user, $title, $description, $category, $images = [], $articleId, 
-        $isOpen = false, $fileId, $location, $article;
+    public $user, $category, $title, $description, $articleId,
+        $images = [], $isOpen = false, $fileId, $location, $article;
 
     public function rules()
     {
@@ -45,110 +45,108 @@ class CreateArticleForm extends Component
     {
         $listImages = [];
 
-        $unusedFiles = File::select('id', 'location')
-            ->doesntHave('articleImages')
-            ->get();
+        // $unusedFiles = File::select('id', 'location')
+        //     ->doesntHave('articleImages')
+        //     ->get();
         
-        $this->validate();
+        // $this->validate();
         try {
             DB::beginTransaction();
 
             if (empty($this->articleId)) {
-                
                 $article = Article::create([
                     'user_id' => $this->user,
                     'category_id' => $this->category,
                     'title' => $this->title,
                     'description' => $this->description
                 ]);
-                
-                $articleId = $article->id;
 
-                foreach ($this->images as $image) {
+                // Check upload images.
+                if (!empty($this->images)) {
 
-                    $path = $image->store('articles', 'public');
+                    // Looping images, store image, and create a File data.
+                    foreach ($this->images as $image) {
+                        $path = $image->store('articles', 'public');
+                        $file = File::create([
+                            'location' => $path
+                        ]);
 
-                    $file = File::create([
-                        'location' => $path
-                    ]);
-
-                    $fileId = $file->id;
-
-                    $listImages[] = [
-                        'file_id' => $fileId,
-                        'article_id' => $articleId
-                    ];
+                        $listImages[] = [
+                            'article_id' => $article->id,
+                            'file_id' => $file->id
+                        ];
+                    }
+                    
+                    // Create all data images to ArticleImage.
+                    $article->articleImages()->createMany($listImages);
                 }
-
-                $article->articleImages()->createMany($listImages);
-
-                $this->dispatch('load-data-article');
+                
                 $this->dispatch('open-alert', status: 'success', message: 'Article successfully created.');
-
             } else {
                 $article = Article::findOrFail($this->articleId);
 
                 $data = $this->only([
-                    'title', 'category', 'user', 'description'
+                    'title', 'description'
                 ]);
+
+                $data['user_id'] = $this->user;
+                $data['category_id'] = $this->category;
                 
                 $article->update($data);
 
-                foreach ($this->images as $image) {
-                    $path = $image->store('articles', 'public');
+                // Check upload images.
+                if (!empty($this->images)) {
 
-                    $file = File::create([
-                        'location' => $path
-                    ]);
+                    // Check old images.
+                    if ($article->articleImages) {
+                        $fileIds = $article->articleImages->pluck('file_id')->toArray();
+                        
+                        // Delete old images.
+                        $allNameFiles = File::whereIn('id', $fileIds)->pluck('location')->toArray();
+                        Storage::delete($allNameFiles);
 
-                    $fileId = $file->id;
+                        // Delete old File data.
+                        $files = File::whereIn('id', $fileIds)->delete();
 
-                    $listImages[] = [
-                        'file_id' => $fileId,
-                        'article_id' => $article->id
-                    ];
-
-                    if (!empty($article->articleImages)) {
-                        foreach ($article->articleImages as $articleImage) {
-                            if ($articleImage->file_id) {
-                                $oldFileName = $articleImage->file->location;
-                            }
-    
-                            if (isset($oldFileName)) {
-                                Storage::delete($oldFileName);
-                            }
-    
-                            if (!$unusedFiles->isEmpty()) {
-                                foreach ($unusedFiles as $unusedFile) {
-                                    $unusedFile->delete();
-                                }
-                            }
-    
-                            $deleteFile = File::findOrFail($articleImage->file->id)->delete();
-                        }
+                        // Delete old Article Image data.
+                        $article->articleImages()->delete();
                     }
+
+                    // Looping images, store image, and create a File data.
+                    foreach ($this->images as $image) {
+                        $path = $image->store('articles', 'public');
+                        $file = File::create([
+                            'location' => $path
+                        ]);
+
+                        $listImages[] = [
+                            'article_id' => $this->articleId,
+                            'file_id' => $file->id
+                        ];
+                    }
+                    
+                    // Create all data images to ArticleImage.
+                    $article->articleImages()->createMany($listImages);
                 }
 
-                $article->articleImages()->createMany($listImages);
-
-                $this->dispatch('load-data-article');
                 $this->dispatch('open-alert', status: 'success', message: 'Articles successfully updated.');
             }
 
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollback();
-
+            
             $this->dispatch('open-alert', status: 'error', message: 'Error: ' . $th->getMessage());
         }
-
+        
         $this->closeModal();
+        $this->dispatch('load-data-article');
     }
 
     public function render()
     {
         return view('livewire.article.create-article-form', [
-            'articles' => Article::all(),
+            // 'articles' => Article::all(),
             'users' => User::all(),
             'categories' => Category::all()
         ]);
@@ -171,10 +169,10 @@ class CreateArticleForm extends Component
     public function closeModal()
     {
         $this->isOpen = false;
-           $this->reset([
+        $this->reset([
             'title', 'category', 'user', 'description', 'images'
         ]); 
-        $this->resetValidation();
+        // $this->resetValidation();
     }
 
     #[On('edit-article')]
