@@ -16,7 +16,7 @@
           <livewire:article.create-article-form>
         </div>
 
-        {{-- <livewire:component.alert> --}}
+        <livewire:component.alert>
 
         <div class="table-responsive">
           <table class="table table-hover table-bordered mt-3">
