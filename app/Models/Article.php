@@ -39,4 +39,13 @@ class Article extends Model
             fn () => $this->articleImages->first()
         );
     }
+
+    public function dateTime(): Attribute
+    {
+        return Attribute::make(
+            fn() => $this->created_at->diffForHumans([
+                'parts' => 2
+            ])
+        );
+    }
 }
