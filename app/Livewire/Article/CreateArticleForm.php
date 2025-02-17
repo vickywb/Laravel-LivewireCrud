@@ -25,18 +25,16 @@ class CreateArticleForm extends Component
     {
         $rules = [
             'title' => 'required|string|max:255',
-            'user' => 'required|string',
-            'category' => 'required|string',
+            'user' => 'required',
+            'category' => 'required',
             'description' => 'required|string|max:255',
             'images.*' => 'image|max:2048'
         ];
-
-        // if (!empty($this->articleId)) {
-        //     $rules['user'] = 'nullable';
-        //     $rules['category'] = 'nullable';
-        //     $rules['title'] = 'nullable|string';
-        //     $rules['description'] = 'nullable|string';
-        // }
+        
+        if (!empty($this->articleId)) {
+            $rule['user'] = 'nullable|exists:users';
+            $rule['category'] = 'nullable|exists:categories';
+        }
 
         return $rules;
     }
@@ -45,11 +43,8 @@ class CreateArticleForm extends Component
     {
         $listImages = [];
 
-        // $unusedFiles = File::select('id', 'location')
-        //     ->doesntHave('articleImages')
-        //     ->get();
-        
-        // $this->validate();
+        $this->validate();
+
         try {
             DB::beginTransaction();
 
@@ -141,12 +136,12 @@ class CreateArticleForm extends Component
         
         $this->closeModal();
         $this->dispatch('load-data-article');
+        $this->resetValidation();
     }
 
     public function render()
     {
         return view('livewire.article.create-article-form', [
-            // 'articles' => Article::all(),
             'users' => User::all(),
             'categories' => Category::all()
         ]);
@@ -158,21 +153,13 @@ class CreateArticleForm extends Component
         $this->isOpen = true;
     }
 
-    // public function resetModal()
-    // {
-    //    $this->reset([
-    //         'title', 'category', 'user', 'description', 'images'
-    //     ]);
-    //     $this->resetValidation();
-    // }
-
     public function closeModal()
     {
         $this->isOpen = false;
         $this->reset([
             'title', 'category', 'user', 'description', 'images'
-        ]); 
-        // $this->resetValidation();
+        ]);
+        $this->resetValidation();
     }
 
     #[On('edit-article')]
