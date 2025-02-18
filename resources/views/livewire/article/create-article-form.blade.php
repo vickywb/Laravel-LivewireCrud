@@ -43,9 +43,9 @@
                                             class="form-select @error('user') is-invalid @enderror" 
                                             wire:model="user"
                                         >
-                                            <option>Select Author</option>
+                                            <option selected>Select Author</option>
                                             @foreach ($users as $user)
-                                                <option value={{ $user->id }} selected>{{ $user->name }}</option>
+                                                <option value={{ $user->id }}>{{ $user->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('user') 
@@ -62,9 +62,9 @@
                                             class="form-select @error('category') is-invalid @enderror" 
                                             wire:model="category"
                                         >
-                                            <option>Select Category</option>
+                                            <option selected>Select Category</option>
                                             @foreach ($categories as $category)
-                                                <option value={{ $category->id }} selected>{{ $category->title }}</option>
+                                                <option value={{ $category->id }}>{{ $category->title }}</option>
                                             @endforeach
                                         </select>
                                         @error('category') 
