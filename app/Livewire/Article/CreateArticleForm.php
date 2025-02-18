@@ -6,7 +6,6 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
@@ -16,24 +15,24 @@ use Livewire\Features\SupportFileUploads\WithFileUploads;
 
 class CreateArticleForm extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads;
 
     public $user, $category, $title, $description, $articleId,
-        $images = [], $isOpen = false, $fileId, $location, $article;
+        $images = [], $isOpen = false;
 
-    public function rules()
+    protected function rules()
     {
         $rules = [
             'title' => 'required|string|max:255',
-            'user' => 'required',
-            'category' => 'required',
+            'user' => 'required|exists:users,id',
+            'category' => 'required|exists:categories,id',
             'description' => 'required|string|max:255',
-            'images.*' => 'image|max:2048'
+            'images.*' => 'nullable|image|max:2048'
         ];
         
         if (!empty($this->articleId)) {
-            $rule['user'] = 'nullable|exists:users';
-            $rule['category'] = 'nullable|exists:categories';
+            $rules['user'] = 'nullable|exists:users,id';
+            $rules['category'] = 'nullable|exists:categories,id';
         }
 
         return $rules;
@@ -41,9 +40,9 @@ class CreateArticleForm extends Component
 
     public function save()
     {
-        $listImages = [];
-
         $this->validate();
+        
+        $listImages = [];
 
         try {
             DB::beginTransaction();
@@ -136,7 +135,6 @@ class CreateArticleForm extends Component
         
         $this->closeModal();
         $this->dispatch('load-data-article');
-        $this->resetValidation();
     }
 
     public function render()
@@ -157,7 +155,8 @@ class CreateArticleForm extends Component
     {
         $this->isOpen = false;
         $this->reset([
-            'title', 'category', 'user', 'description', 'images'
+            'title', 'category', 'user', 'description', 
+            'images', 'articleId'
         ]);
         $this->resetValidation();
     }
